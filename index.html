@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Tic Tac Toe</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+</head>
+<body>
+  <div class="modal fade" tabindex="-1" role="dialog" id="message-dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Message</h4>
+        </div>
+        <div class="modal-body">
+          <p id="message-dialog-message"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  <table style="width: 100%; height: 100%;">
+    <tr>
+      <td>
+        <nav class="navbar navbar-default">
+          <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+              <a class="navbar-brand" href="#">Tic Tac Toe</a>
+            </div>
+              <ul class="nav navbar-nav navbar-left">
+                <form class="navbar-form navbar-left">
+                  <button type="button" class="btn btn-default" onclick="restart()">Restart</button>
+                </form>
+                <form class="navbar-form navbar-left">
+                  <span class="label label-danger">AI</span>
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default active" onclick="updateMode('smart')" id="button-ai-smart">Smart</button>
+                    <button type="button" class="btn btn-default" onclick="updateMode('random')" id="button-ai-random">Random</button>
+                  </div>
+                </form>
+                <form class="navbar-form navbar-left">
+                  <h4><span class="label label-success">WIN: <span id="counter-win">0</span></span></h4>
+                </form>
+                <form class="navbar-form navbar-left">
+                  <h4><span class="label label-danger">LOSE: <span id="counter-lose">0</span></span></h4>
+                </form>
+              </ul>
+            </div><!-- /.navbar-collapse -->
+          </div><!-- /.container-fluid -->
+        </nav>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <div id="TicTacToe" align="center"></div>
+      </td>
+    </tr>
+  </table>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/bonsai/0.4/bonsai.min.js"></script>
+  <script>
+    var tileSize = 200;
+    var player = document.getElementById('TicTacToe');
+    var bonsai = bonsai.run(player, 'TicTacToe.js', {
+      height: tileSize * 3,
+      width: tileSize * 3,
+      tileSize: tileSize,
+      framerate: 60
+    });
+
+    // Seems we cannot access certain browser functionality from bonsai.
+    // So, we have to send/receive messages to communicate between bonsai and browser.
+    // reference: http://docs.bonsaijs.org/overview/Communication.html
+    function restart() {
+      bonsai.sendMessage({
+        message: 'restart'
+      });
+    }
+
+    function updateMode(mode) {
+      if (mode === 'smart') {
+        $('#button-ai-smart').addClass('active');
+        $('#button-ai-random').removeClass('active');
+      } else {
+        $('#button-ai-smart').removeClass('active');
+        $('#button-ai-random').addClass('active');
+      }
+
+      bonsai.sendMessage({
+        message: 'updateMode',
+        mode: mode
+      });
+    }
+
+    bonsai.on('message', function(data) {
+      if (data.message === 'gameOver') {
+        if (data.winner === 0) {
+          $('#message-dialog-message').html('Draw');
+        } else if (data.winner === 1) {
+          $('#message-dialog-message').html('Win');
+          $('#counter-win').html(parseInt($('#counter-win').html()) + 1);
+        } else {
+          $('#message-dialog-message').html('Lose');
+          $('#counter-lose').html(parseInt($('#counter-lose').html()) + 1);
+        }
+
+        $('#message-dialog').modal().on('hidden.bs.modal', function() {
+          bonsai.sendMessage({
+            message: 'restart'
+          });
+        });
+      }
+    });
+  </script>
+  <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+</body>
+</html>
+
